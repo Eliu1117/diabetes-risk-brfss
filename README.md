@@ -1,56 +1,72 @@
 # Diabetes Risk Prediction from CDC Health Indicators
 
-Predict diabetes risk from self-reported health survey indicators using cleaning, classical statistics, and baseline ML models (logistic regression + SVM).
+Predict diabetes risk from self-reported CDC/BRFSS health indicators using data cleaning, classical statistics, and baseline ML models (logistic regression + SVM).
 
-Built as a **5-person** machine learning project on a cleaned **70,692-record** CDC health survey dataset with **21** indicators.
+Built as a **5-person** machine learning project on a balanced **70,692-record** BRFSS 2015 extract with **21** health indicators.
+
+**Live report:** [eliu1117-github-io.vercel.app/projects/diabetes-risk](https://eliu1117-github-io.vercel.app/projects/diabetes-risk)
+
+Also linked from my [portfolio](https://eliu1117-github-io.vercel.app/#projects).
 
 ## Highlights
 
-- Cleaned and validated a large CDC survey extract in **Python / Pandas** (corrupted features + missing values)
-- Ran **chi-squared**, **two-sample t-tests**, and **Mann-Whitney U** tests across 21 indicators
-- Found **BMI, blood pressure, cholesterol, and age** as significant predictors of diabetes
-- Authored the primary analysis write-up for **logistic regression** and **SVM** results
-
-## Motivation
-
-Diabetes screening at population scale is expensive if it depends only on clinical labs. Survey-based indicators from the CDC’s Behavioral Risk Factor Surveillance System (BRFSS) are widely used for public-health risk modeling. This project asks which of those indicators associate with diabetes status, and how well simple, interpretable models recover that signal.
+- Cleaned and validated a 70,692-row survey extract in Python / pandas
+- Ran chi-squared, two-sample t-tests, and Mann-Whitney U tests on key indicators
+- Found **general health, BMI, age, high blood pressure, and high cholesterol** as the strongest predictors
+- Trained scaled **logistic regression** and **linear SVM** models (~75% test accuracy)
+- Authored the primary analysis write-up for the team report
 
 ## Dataset
 
 | Item | Detail |
 | --- | --- |
-| Source | CDC BRFSS health indicators (diabetes risk / binary diabetes label) |
-| Rows after cleaning | 70,692 |
+| Source | [CDC BRFSS](https://www.cdc.gov/brfss/annual_data/annual_data.htm) (2015), via the [Kaggle diabetes health indicators extract](https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/data?select=diabetes_binary_5050split_health_indicators_BRFSS2015.csv) |
+| File used | `diabetes_binary_5050split_health_indicators_BRFSS2015.csv` |
+| Rows after cleaning | 70,642 |
 | Features | 21 health indicators |
-| Target | Diabetes status (binary) |
+| Target | Diabetes status (binary, 50/50 split) |
 
-> **Do not commit the raw CSV.** Place it in `data/raw/` locally (gitignored). Prefer linking the public CDC/BRFSS or Kaggle mirror you actually used.
+> Do not commit the raw CSV. Place it in `data/raw/` locally (gitignored). Survey data remains under CDC / original dataset terms.
 
-Common public mirrors (confirm which one you used, then document the exact year/file):
-- [CDC BRFSS annual data](https://www.cdc.gov/brfss/annual_data/annual_data.htm)
-- Community extracts such as the BRFSS diabetes health indicators datasets on Kaggle
+## Methods
 
-## Repo layout
+1. **Cleaning** — reverse intentional “dirtying,” handle missing values, standardize indicators
+2. **EDA** — class-conditional distributions across ordinal and binary features
+3. **Inference** — chi-squared (high cholesterol), two-sample t-test (BMI), Mann-Whitney U (age)
+4. **Modeling** — scaled logistic regression and linear SVM on 14 selected features with an 80/20 holdout
 
-```text
-diabetes-risk-brfss/
-├── README.md
-├── requirements.txt
-├── notebooks/
-│   ├── 01_eda.ipynb                 # cleaning + EDA
-│   ├── 02_statistical_tests.ipynb   # chi² / t / Mann-Whitney
-│   └── 03_models.ipynb              # logistic regression + SVM
-├── src/
-│   ├── preprocess.py                # reusable cleaning helpers
-│   ├── stats.py                     # statistical tests
-│   └── models.py                    # model pipelines + evaluation
-├── reports/
-│   └── analysis_writeup.md          # plain-language conclusions
-├── figures/                         # export plots here for the README
-└── data/
-    ├── raw/                         # gitignored — drop CSV locally
-    └── processed/                   # gitignored — cleaned tables
-```
+## Results
+
+Full write-up, plots, and code cells live on the [project report page](https://eliu1117-github-io.vercel.app/projects/diabetes-risk).
+
+### Statistical associations
+
+| Test | Indicator | Result |
+| --- | --- | --- |
+| Chi-squared | High cholesterol | χ² ≈ 5907, p ≈ 0 |
+| Two-sample t-test | BMI | t ≈ −81.6, p ≈ 0 |
+| Mann-Whitney U | Age group | p ≈ 0 |
+
+Individuals with diabetes tended to have higher BMI and older age groups; high cholesterol was strongly associated with diabetes status.
+
+### Model performance (test set)
+
+| Model | Accuracy | Notes |
+| --- | --- | --- |
+| Logistic regression | ~75% | Precision / recall ≈ 0.75 for both classes |
+| Linear SVM | ~75% | Slightly higher diabetes recall (~0.79) |
+
+Strongest model features in both cases: **general health, BMI, age, high blood pressure, and high cholesterol**.
+
+## Contributions
+
+**Ethan Liu:** data cleaning; primary write-up for exploratory analysis and ML methods/results.
+
+**Team:** Andrew Liu, Ethan Liu, Kaelyn Funchion, Jane Oh, James Lin.
+
+## Stack
+
+Python · pandas · SciPy · scikit-learn · Matplotlib · Jupyter
 
 ## Setup
 
@@ -58,63 +74,11 @@ diabetes-risk-brfss/
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-jupyter notebook
 ```
 
-1. Download the survey CSV you used for the course project into `data/raw/`.
-2. Open `notebooks/01_eda.ipynb` and re-run cleaning → EDA → tests → models.
-3. Export key plots into `figures/` and paste final metrics into the Results section below.
-
-## Methods (short)
-
-1. **Cleaning** — validate fields, handle missing/corrupted values, standardize the 21 indicators.
-2. **EDA** — class balance, univariate distributions, pairwise associations with diabetes.
-3. **Inference** — chi-squared for categorical associations; t-test and Mann-Whitney U for group differences.
-4. **Modeling** — scaled **logistic regression** and **SVM** baselines with a held-out test set; report discrimination and error modes.
-
-## Results
-
-### Statistical associations
-Significant predictors called out in the project analysis:
-
-| Indicator | Why it mattered |
-| --- | --- |
-| BMI | Strong association with diabetes status |
-| Blood pressure | Significant across tests used |
-| Cholesterol | Significant across tests used |
-| Age | Significant across tests used |
-
-Exact p-values / effect sizes: **TODO — paste from notebooks**.
-
-### Model performance
-| Model | Accuracy | Precision | Recall | ROC-AUC |
-| --- | --- | --- | --- | --- |
-| Logistic regression | TODO | TODO | TODO | TODO |
-| SVM | TODO | TODO | TODO | TODO |
-
-> Leave these as TODO until you re-run or copy numbers from the original report — don’t invent metrics.
-
-## My contributions
-
-- Data cleaning and validation on the 70,692-row extract
-- Statistical testing across the 21 indicators
-- Primary analysis write-up for logistic regression and SVM (methods → results → plain-language conclusions)
-
-Team: **5 members** — TODO: add names/GitHub handles if teammates are OK being listed.
-
-## Stack
-
-Python · Pandas · SciPy · scikit-learn · Matplotlib · Jupyter
-
-## Status / next steps for publishing
-
-- [ ] Drop original notebooks into `notebooks/` (replace the stubs)
-- [ ] Fill Results metrics from the real run
-- [ ] Add 2–4 figures (class balance, top associations, ROC curves)
-- [ ] Confirm exact BRFSS year / source URL
-- [ ] Optional: add teammate credits
-- [ ] Link this repo from the [portfolio](https://eliu1117-github-io.vercel.app) and profile README
+1. Download the Kaggle CSV into `data/raw/`.
+2. Open the notebooks under `notebooks/` (or follow the live report) to re-run cleaning → EDA → tests → models.
 
 ## License
 
-Analysis code: MIT (recommended). Survey data remains under CDC / original dataset terms — not redistributed in this repo.
+Analysis code: MIT. Survey data is not redistributed in this repository.
